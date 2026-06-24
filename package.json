@@ -1,0 +1,32 @@
+{
+  "name": "pharos-agent-kit",
+  "version": "0.1.0",
+  "description": "AI Agent Kit for Pharos blockchain — interact via MCP with Claude Code, Cursor, Codex, or programmatically with AI SDK",
+  "type": "module",
+  "scripts": {
+    "wallet:simple": "tsx scripts/wallet-manager.ts generate --simple",
+    "wallet:secure": "tsx scripts/wallet-manager.ts generate --secure",
+    "wallet:import": "tsx scripts/wallet-manager.ts import",
+    "signer": "tsx scripts/signer-daemon.ts",
+    "security-test": "tsx scripts/security-test.ts",
+    "demo:wallet": "tsx examples/01-wallet-and-faucet.ts",
+    "demo:send": "tsx examples/02-send-tokens.ts",
+    "demo:deploy": "tsx examples/03-deploy-and-verify.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^1.2.0",
+    "@ai-sdk/mcp": "^1.0.36",
+    "@ai-sdk/openai": "^1.2.0",
+    "ai": "^4.3.0",
+    "dotenv": "^16.4.0",
+    "viem": "^2.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

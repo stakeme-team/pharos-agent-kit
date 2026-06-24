@@ -1,0 +1,51 @@
+services:
+  # Development & running examples
+  # For npm install, use: docker compose run --rm install
+  dev:
+    build: .
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    env_file: .env
+    network_mode: bridge
+    stdin_open: true
+    tty: true
+
+  # Install dependencies (needs network access)
+  install:
+    build: .
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    network_mode: host
+    command: npm install
+
+  # Signing daemon — completely isolated from network
+  # Signing daemon — completely isolated from network
+  # Usage:
+  #   Interactive:  docker compose run signer (enter password via TTY)
+  #   Detached:     echo "pass" > .keystore/.password && docker compose up -d signer
+  signer:
+    build: .
+    command: npx tsx scripts/signer-daemon.ts
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - ./.keystore:/app/.keystore:ro
+      - signer-socket:/tmp
+    stdin_open: true
+    tty: true
+    network_mode: "none"
+
+  # Security tests — read-only, no network
+  security-test:
+    build: .
+    command: npx tsx scripts/security-test.ts
+    volumes:
+      - .:/app:ro
+      - node_modules:/app/node_modules
+    network_mode: "none"
+
+volumes:
+  node_modules:
+  signer-socket:
