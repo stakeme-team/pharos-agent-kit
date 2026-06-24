@@ -1,195 +1,238 @@
+<div align="center">
+
+<img src="assets/pharos-logomark.svg" alt="Pharos" width="96" height="96">
+
 # Pharos Agent Kit
 
-MCP-based toolkit for interacting with the [Pharos](https://pharos.exploreme.pro) blockchain through AI agents or terminal. Claim faucet tokens, send transactions, deploy & verify contracts, explore blocks and tokens — all from a single workspace, without switching between explorer, faucet, and wallet UIs.
+**All-in-one MCP toolkit for the [Pharos](https://pharos.exploreme.pro) blockchain — in TypeScript.**
 
-**Your private key never leaves your machine.** MCP prepares unsigned transactions, but signing always happens locally. The key is never sent to the AI model or remote server. Two levels of protection: **Simple** — a guard hook blocks the agent from reading `.env`; **Secure** — an advanced signing daemon keeps the key encrypted and isolated in a separate process, the agent only receives the signed hash.
+Wallet operations · local-only signing · native & ERC-20 transfers · staking · contract deploy & verify · faucet · full chain exploration — from **Claude Code**, **Cursor**, **Codex**, or directly via the **Vercel AI SDK**.
 
-**Two ways to use:**
+Built for **humans**. Perfect for **AI**.
 
-1. **Subscription** (free) — connect MCP to Claude Code / Cursor / Codex, use your existing subscription
-2. **AI SDK** (developers) — programmatic agents via Vercel AI SDK with Claude or OpenAI
+[![MCP](https://img.shields.io/badge/MCP-server-6E56CF?logo=modelcontextprotocol&logoColor=white)](https://modelcontextprotocol.io)
+[![Pharos](https://img.shields.io/badge/Pharos-Mainnet%20·%20chainId%201672-0A0BFF)](https://pharos.exploreme.pro)
+[![Explorer](https://img.shields.io/badge/explorer-exploreme.pro-2D6CDF)](https://pharos.exploreme.pro)
+[![License](https://img.shields.io/badge/License-MIT-2da44e)](#license)
+
+[![Node](https://img.shields.io/badge/Node-%E2%89%A520-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![viem](https://img.shields.io/badge/EVM-viem-FFC517?logo=ethereum&logoColor=black)](https://viem.sh)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](#docker-isolation)
+
+**Works with** &nbsp;
+[![Claude Code](https://img.shields.io/badge/Claude_Code-D97757?logo=anthropic&logoColor=white)](docs/claude-code-setup.md)
+[![Cursor](https://img.shields.io/badge/Cursor-000000?logo=cursor&logoColor=white)](docs/cursor-setup.md)
+[![Codex](https://img.shields.io/badge/Codex-412991)](docs/codex-setup.md)
+[![Vercel AI SDK](https://img.shields.io/badge/AI_SDK-000000?logo=vercel&logoColor=white)](#quick-start--ai-sdk-programmatic)
+
+</div>
+
+---
+
+## Why Pharos Agent Kit
+
+**Everything in one workspace.** Check balances, send transactions, deploy and verify
+contracts, stake, and explore blocks, tokens and accounts — without switching between
+the explorer and wallet UIs. The agent does the clicking; you stay in chat.
+
+**Your private key never leaves your machine.** MCP only prepares *unsigned*
+transactions — signing happens locally with [viem](https://viem.sh), and the key is
+never sent to the AI model or a remote server.
+
+**Two protection levels.**
+- **Simple** — a guard hook blocks the agent from reading `.env`.
+- **Secure** — an encrypted keystore + a signing daemon in a separate, isolated process; the agent only ever receives the signed transaction.
+
+**Two ways to use.**
+- **Subscription** (free) — connect MCP to Claude Code / Cursor / Codex and use your existing subscription.
+- **AI SDK** (developers) — programmatic agents via the Vercel AI SDK with Claude or OpenAI.
+
+> ⚠️ **Mainnet — real funds.** This kit targets the **Pharos mainnet** (`chainId 1672`,
+> native token **PROS**) behind the [Exploreme](https://pharos.exploreme.pro) explorer &
+> API. `/send` and `/deploy` move **real PROS** — fund your address from an exchange or
+> bridge. Prefer **secure mode with manual approval** (`npm run signer -- --manual`) so
+> every signature needs your explicit `y/n`. The faucet tools are testnet-only.
+
+---
 
 ## Architecture
 
 ```
-┌────────────────────────────┐
-│  You (chat or code)        │
-├────────────────────────────┤
-│  AI Agent                  │
-│  (Claude / GPT / local)    │
-│                            │
-│  Sees: wallet address,     │
-│        MCP tool results    │
-│  Never sees: private key   │
-├──────────┬─────────────────┤
-│ sign-tx  │  MCP Server     │
-│ (local)  │  (remote)       │
-│          │                 │
-│ Signs tx │  prepare_*      │
-│ locally  │  broadcast      │
-│          │  query blocks   │
-│ Key in   │  faucet         │
-│ .env or  │  verify         │
-│ keystore │  explorer       │
-└──────────┴─────────────────┘
+┌─────────────────────────────────┐
+│  You (chat or code)             │
+├─────────────────────────────────┤
+│  AI Agent (Claude / GPT)        │
+│                                 │
+│  Sees: wallet address,          │
+│        MCP tool results         │
+│  Never sees: private key        │
+├───────────────┬─────────────────┤
+│ local signing │  MCP Server     │
+│ (your machine)│  (remote)       │
+│               │                 │
+│  viem         │  prepare_*      │
+│               │  broadcast      │
+│  Key in .env  │  query / stake  │
+│  or keystore  │  deploy / verify│
+└───────────────┴─────────────────┘
 ```
 
-**Key principle:** The private key NEVER leaves your machine. MCP prepares unsigned transactions, signing happens locally, then the signed transaction is broadcast back through MCP.
+**Key principle:** the private key NEVER leaves your machine. MCP prepares the
+unsigned tx → you sign locally → the signed tx is broadcast back through MCP.
 
-## Quick Start: Subscription (Claude Code)
+---
+
+## Quick Start — Claude Code (subscription)
 
 ```bash
 # Clone
 git clone https://github.com/stakeme-team/pharos-agent-kit
 cd pharos-agent-kit
 
-# Install (in Docker for safety)
-docker run --rm --network host -v "$(pwd):/app" -w /app node:20-alpine npm install
+# Install
+npm install
 
-# Create wallet
-npx tsx scripts/wallet-manager.ts generate --simple
+# Create a wallet (outputs only the public address)
+npm run wallet:simple
 
 # Open Claude Code
 claude
 ```
 
-Claude Code auto-detects `.mcp.json` and connects to Pharos. Use the built-in skills:
+Claude Code auto-detects `.mcp.json` and connects to the Pharos MCP server. Then
+just chat:
 
-```
-/wallet    — Get testnet tokens from faucet
-/send      — Send tokens to a random address from a recent block
-/deploy    — Deploy and verify a smart contract
-```
+> *"Show my PROS balance, then send 0.001 PROS to 0x5f98ce551fFbd3C5C6bA571e0F793F8ADE228F96 and wait for the receipt."*
 
-Or just chat: *"Send 0.001 PHRS to a random address from the latest block"*
+> See also: [Claude Code setup](docs/claude-code-setup.md) · [Cursor setup](docs/cursor-setup.md) · [Codex setup](docs/codex-setup.md) · [ready-made prompts](docs/prompts.md)
 
-> See also: [Cursor setup](docs/cursor-setup.md) | [Codex setup](docs/codex-setup.md)
+---
 
-## Quick Start: AI SDK (Programmatic)
+## Quick Start — AI SDK (programmatic)
 
 ```bash
-# Clone & install
 git clone https://github.com/stakeme-team/pharos-agent-kit
 cd pharos-agent-kit
-docker run --rm --network host -v "$(pwd):/app" -w /app node:20-alpine npm install
+npm install
 
-# Configure
 cp .env.example .env
-npx tsx scripts/wallet-manager.ts generate --simple
+npm run wallet:simple
 # Edit .env: add ANTHROPIC_API_KEY or OPENAI_API_KEY
 
-# Run demos
-npm run demo:wallet    # Claim faucet tokens
-npm run demo:send      # Send tokens to random address
-npm run demo:deploy    # Deploy & verify contract
+npm run demo:wallet    # show wallet address & PROS balance
+npm run demo:send      # send PROS to your own address (safe self-send)
+npm run demo:deploy    # deploy & verify an EVM contract
 ```
 
-Switch between Claude and OpenAI:
+Switch model provider in `.env`:
+
 ```env
 AI_PROVIDER=anthropic   # or openai
 ```
 
+---
+
+## Skills
+
+Built-in Claude Code / Cursor skills (slash commands):
+
+| Skill | What it does |
+|-------|--------------|
+| `/wallet` | Set up a wallet and show your address & PROS balance |
+| `/send` | Send PROS to a recipient address you specify |
+| `/deploy` | Deploy **and** verify an EVM smart contract |
+
+---
+
 ## Security
 
-### Simple Mode (default)
+### Simple mode (default)
 
-Private key in `.env`, protected by guard hooks that block the agent from reading it.
+Private key in `.env`, protected by a guard hook that blocks the agent from reading it.
 
 ```bash
-npx tsx scripts/wallet-manager.ts generate --simple
-```
-
-Guard blocks 20+ attack vectors (tested):
-```bash
+npm run wallet:simple
 npm run security-test
-# ✓ cat .env           → BLOCKED
-# ✓ grep PRIVATE .env  → BLOCKED
-# ✓ echo $PRIVATE_KEY  → BLOCKED
-# ✓ python3 read .env  → BLOCKED
-# ... 26/26 passed ✓
+# ✓ cat .env            → BLOCKED
+# ✓ grep PRIVATE .env   → BLOCKED
+# ✓ echo $PRIVATE_KEY   → BLOCKED
+# ✓ python3 read .env   → BLOCKED
+# ... 27/27 passed ✓
 ```
 
-### Secure Mode (signing daemon)
+### Secure mode (signing daemon)
 
-Private key encrypted in keystore, decrypted only in a separate daemon process. Agent physically cannot access the key.
+Private key encrypted in a keystore, decrypted only inside a separate daemon
+process. The agent physically cannot reach the key — it only ever gets the signed
+hex back.
 
 ```bash
-# Create encrypted wallet
-npx tsx scripts/wallet-manager.ts generate --secure
+# Create an encrypted wallet
+npm run wallet:secure
 
-# Start daemon (separate terminal)
-npx tsx scripts/signer-daemon.ts
-# Unlock password: ********
-# ✓ Signer ready: 0x742d...
-# ✓ Socket: /tmp/pharos-signer.sock
+# Start the daemon (separate terminal)
+npm run signer              # auto-approve
+npm run signer -- --manual  # ask y/n per transaction
 ```
 
 ```
-┌───────────────────┐     ┌───────────────────┐
-│  Agent            │     │  Signer Daemon     │
-│  (no key access)  │────▶│  (key in memory)   │
-│                   │unix │                    │
-│  Gets: signed hex │◀────│  Signs tx          │
-└───────────────────┘sock └───────────────────┘
+┌───────────────────┐     ┌────────────────────┐
+│  Agent            │     │  Signer Daemon      │
+│  (no key access)  │────▶│  (key in memory)    │
+│                   │unix │  viem               │
+│  Gets: signed hex │◀────│  signs tx           │
+└───────────────────┘sock └────────────────────┘
 ```
 
-#### Approval Modes
-
-**Auto mode** (default) — signs transactions immediately:
-```bash
-npx tsx scripts/signer-daemon.ts
-```
-
-**Manual mode** — requires human approval for each transaction:
-```bash
-npx tsx scripts/signer-daemon.ts --manual
-```
-
-In manual mode, every signing request shows transaction details and waits for your approval. The agent (Claude) just waits until you decide:
+In `--manual` mode every signing request prints the tx details and waits for your
+`y/n`:
 
 ```
   ⚠  Sign transaction?
      Type:    TRANSFER
      To:      0x5f98ce551fFbd3C5C6bA571e0F793F8ADE228F96
-     Value:   0.01 (10000000000000000 wei)
+     Value:   0.01 PROS (10000000000000000 wei)
      Gas:     25200
 
      Approve? [y/n]: y
-     ✓ Signed: to=0x5f98ce... value=10000000000000000
+     ✓ Signed
 ```
 
-If you reject (`n`), the agent receives an error and can inform you that the transaction was declined.
+If you reject (`n`), the agent receives an error and tells you the transaction was declined.
 
-#### Password File (for Docker detached)
+### Docker isolation
 
-To run the daemon without interactive password input:
-
-```bash
-# Create password file
-echo "your_password" > .keystore/.password
-chmod 600 .keystore/.password
-
-# Run detached
-docker compose up -d signer
-
-# Check logs
-docker compose logs signer
-```
-
-### Docker Isolation
-
-Protect against supply chain attacks in npm packages:
+Guard against supply-chain attacks in npm packages and run the signer with no
+network access:
 
 ```bash
-# Install deps in container (node_modules isolated)
-docker compose run --rm install
-
-# Run demos in container
+docker compose run --rm install                  # install deps in a container
 docker compose run --rm dev npx tsx examples/01-wallet-and-faucet.ts
-
-# Signer daemon with NO network access
-docker compose up signer
+docker compose up signer                          # signer daemon, NO network access
 ```
+
+---
+
+## MCP Tools
+
+The Pharos MCP server at `https://api.pharos.exploreme.pro/mcp` exposes 85+ tools —
+mostly read queries across the chain, plus the write tools that prepare and broadcast
+transactions:
+
+| Category | Tools |
+|----------|-------|
+| **Transactions** (write) | `prepare_native_transfer`, `prepare_erc20_transfer`, `prepare_erc721_transfer`, `prepare_erc1155_transfer`, `prepare_token_approval`, `prepare_contract_write`, `prepare_transaction`, `broadcast_signed_raw_transaction`, `wait_for_transaction` |
+| **Staking** (write) | `prepare_delegate`, `prepare_undelegate`, `prepare_add_stake`, `prepare_withdraw_stake`, `prepare_claim_stake`, `prepare_claim_reward`, `prepare_compound_rewards` |
+| **Balances / accounts** | `get_balance`, `get_token_balance`, `get_evm_account_by_address`, `get_account_token_summary`, `get_account_token_holdings`, `get_account_transactions`, `get_account_token_transfers` |
+| **Blocks / transactions** | `list_evm_blocks`, `get_evm_block_by_height`, `list_evm_transactions`, `get_evm_transaction_by_hash`, `get_transaction_receipt`, `get_evm_transaction_logs` |
+| **Contracts** | `read_evm_contract`, `get_evm_contract_code`, `get_evm_compiler_versions`, `verify_evm_contract_standard_json`, `verify_evm_contract_flattened`, `verify_evm_contract_multi_part` |
+| **Tokens / NFTs** | `list_erc20_tokens`, `get_erc20_token_by_address`, `list_erc721_tokens`, `list_erc1155_tokens`, `get_erc721_token_holders`, `get_nft_info` |
+| **Validators / staking data** | `list_validators`, `get_validator_by_address`, `get_staking_stats`, `get_account_delegations`, `get_top_delegators` |
+| **Faucet** (testnet only) | `claim_faucet_tokens`, `get_faucet_payout_status` |
+| **Explorer / chain** | `explorer_search`, `get_chain_network`, `get_gas_price`, `get_evm_gas_tracker`, `get_supported_networks` |
+
+---
 
 ## Project Structure
 
@@ -202,24 +245,23 @@ pharos-agent-kit/
 │
 ├── .claude/
 │   ├── settings.json            # Guard hook config
-│   └── skills/
-│       ├── wallet.md            # /wallet skill
-│       ├── send.md              # /send skill
-│       └── deploy.md            # /deploy skill
+│   └── skills/                  # /wallet · /send · /deploy
 │
 ├── scripts/
-│   ├── wallet-manager.ts        # Create/import wallet
-│   ├── sign-tx.ts               # Sign tx (stdin → stdout)
+│   ├── wallet-manager.ts        # Create / import wallet (safe — address only)
+│   ├── sign-tx.ts               # Sign tx (stdin JSON → stdout signed hex)
 │   ├── signer-daemon.ts         # Signing daemon (secure mode)
+│   ├── keystore-utils.ts        # Encrypted keystore helpers
 │   ├── guard.sh                 # Block agent from reading keys
-│   └── security-test.ts         # Test guard (20+ attack vectors)
+│   └── security-test.ts         # Test the guard (attack vectors)
 │
 ├── src/                         # AI SDK core library
 │   ├── mcp-client.ts            # MCP client factory
-│   ├── wallet.ts                # Wallet (address only for LLM)
+│   ├── wallet.ts                # Local signing (simple / secure)
 │   ├── signing-bridge.ts        # Auto-sign prepare_* results
 │   ├── agent.ts                 # Agent factory (Claude + OpenAI)
-│   └── utils.ts                 # Helpers
+│   ├── index.ts                 # Library entry point
+│   └── utils.ts                 # Env, MCP result parsing, helpers
 │
 ├── examples/                    # AI SDK demos
 │   ├── 01-wallet-and-faucet.ts
@@ -230,37 +272,32 @@ pharos-agent-kit/
 │   ├── SimpleStorage.sol
 │   └── compiled/SimpleStorage.json
 │
-├── docs/
-│   ├── claude-code-setup.md
-│   ├── cursor-setup.md
-│   ├── codex-setup.md
-│   └── prompts.md               # Ready-to-use prompts
-│
+├── docs/                        # setup guides + prompts
 ├── Dockerfile
 └── docker-compose.yml
 ```
 
-## MCP Tools
-
-The Pharos MCP server at `https://api.pharos.exploreme.pro/mcp` provides 69 tools:
-
-| Category | Tools |
-|----------|-------|
-| Transactions | `prepare_native_transfer`, `prepare_erc20_transfer`, `prepare_transaction`, `broadcast_signed_raw_transaction`, `wait_for_transaction` |
-| Balances | `get_balance`, `get_token_balance` |
-| Blocks | `list_evm_blocks`, `get_evm_block_by_height` |
-| Contracts | `read_evm_contract`, `verify_evm_contract_standard_json` |
-| Tokens | `list_erc20_tokens`, `get_erc20_token_by_address` |
-| Faucet | `claim_faucet_tokens`, `get_faucet_payout_status` |
-| Explorer | `explorer_search`, `get_account_by_address` |
+---
 
 ## Requirements
 
-- Node.js 20+
-- Docker (recommended for security)
-- For subscription path: Claude Pro/Max, Cursor Pro, or ChatGPT Pro
-- For AI SDK path: Anthropic or OpenAI API key
+- **Node.js 20+** and **npm**
+- **Docker** — optional, recommended for supply-chain-isolated installs and the network-less signer
+- **Subscription path:** Claude Pro/Max, Cursor Pro, or ChatGPT Pro
+- **AI SDK path:** an Anthropic or OpenAI API key
+
+---
 
 ## License
 
 MIT
+
+---
+
+<div align="center">
+
+<img src="assets/pharos-logomark.svg" alt="Pharos" height="30">
+
+<sub>Built by <a href="https://github.com/stakeme-team">Stakeme</a> · explorer at <a href="https://pharos.exploreme.pro">pharos.exploreme.pro</a></sub>
+
+</div>

@@ -1,5 +1,14 @@
 /**
- * Demo 1: Wallet & Faucet
+ * Demo 1: Wallet & Balance
+ *
+ * Shows your wallet address and PROS balance on the Pharos mainnet
+ * (chainId 1672, native token PROS).
+ *
+ * Mainnet uses REAL PROS — fund your address from an exchange or bridge.
+ * The faucet tools (claim_faucet_tokens / get_faucet_payout_status) are
+ * testnet-only. On a Pharos testnet you can ask the agent to:
+ *   "Claim testnet tokens from the faucet and poll get_faucet_payout_status
+ *    until complete, then show my balance."
  *
  * Prerequisites:
  *   npm run wallet:simple   (create wallet)
@@ -15,7 +24,7 @@ import { getWalletAddress } from "../src/utils.js";
 
 const walletAddress = getWalletAddress();
 
-const systemPrompt = `You are a blockchain assistant for the Pharos network.
+const systemPrompt = `You are a blockchain assistant for the Pharos network (mainnet, chainId 1672, native token PROS).
 You have access to MCP tools for interacting with the Pharos blockchain.
 
 The user's wallet address is: ${walletAddress}
@@ -25,16 +34,14 @@ IMPORTANT SECURITY RULES:
 - NEVER use generate_disposable_test_wallet tool
 - Use ONLY the provided wallet address
 
-Your task is to help the user get testnet tokens from the faucet.`;
+Your task is to report the user's wallet address and PROS balance.`;
 
 const userPrompt = `Please do the following:
-1. Check my wallet balance using get_balance
-2. Claim testnet tokens from the faucet using claim_faucet_tokens with my address
-3. Poll the faucet status using get_faucet_payout_status until it's complete (retry up to 10 times with a brief pause)
-4. Check my balance again to confirm I received the tokens
-5. Report the final balance`;
+1. Check my wallet balance using get_balance with my address
+2. Report my address and PROS balance in a clear, human-readable way (convert from wei to PROS)
+3. If the balance is 0, remind me that Pharos mainnet uses real PROS and I should fund this address from an exchange or bridge`;
 
-console.log("=== Pharos Agent Kit: Wallet & Faucet Demo ===");
+console.log("=== Pharos Agent Kit: Wallet & Balance Demo ===");
 console.log(`Wallet: ${walletAddress}`);
 
 await runAgent({

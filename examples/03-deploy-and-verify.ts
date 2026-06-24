@@ -5,7 +5,7 @@
  *
  * Prerequisites:
  *   npm run wallet:simple   (create wallet)
- *   npm run demo:wallet     (get testnet tokens for gas)
+ *   fund your address with PROS for gas (mainnet uses real PROS — see the /wallet skill)
  *
  * Run:
  *   npm run demo:deploy

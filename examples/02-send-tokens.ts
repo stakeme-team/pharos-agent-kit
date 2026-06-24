@@ -1,12 +1,14 @@
 /**
- * Demo 2: Send Tokens
+ * Demo 2: Send Tokens (safe self-send)
  *
- * Sends a small amount of native tokens to a random address
- * found in a recent block.
+ * Sends a tiny amount of PROS to your OWN address to demonstrate the full
+ * prepare -> sign -> broadcast -> confirm flow without sending funds to anyone
+ * else. On mainnet this costs only a little gas. To send to someone else, change
+ * the recipient below to their address.
  *
  * Prerequisites:
  *   npm run wallet:simple   (create wallet)
- *   npm run demo:wallet     (get testnet tokens)
+ *   fund your address with PROS (mainnet uses real PROS — see the /wallet skill)
  *
  * Run:
  *   npm run demo:send
@@ -19,7 +21,11 @@ import { getWalletAddress } from "../src/utils.js";
 
 const walletAddress = getWalletAddress();
 
-const systemPrompt = `You are a blockchain assistant for the Pharos network.
+// Recipient for the demo. Defaults to a safe self-send; set DEMO_SEND_TO to
+// send to a different address instead.
+const recipient = process.env.DEMO_SEND_TO || walletAddress;
+
+const systemPrompt = `You are a blockchain assistant for the Pharos network (mainnet, chainId 1672, native token PROS).
 You have access to MCP tools for interacting with the Pharos blockchain.
 
 The user's wallet address is: ${walletAddress}
@@ -35,18 +41,16 @@ IMPORTANT SECURITY RULES:
 - Transactions are signed automatically by the signing bridge`;
 
 const userPrompt = `Please do the following:
-1. Check my wallet balance (get_balance). If it's 0, tell me to run demo:wallet first.
-2. Get the latest blocks (list_evm_blocks with limit 3)
-3. Pick a recent block and get its details (get_evm_block_by_height) to find transaction addresses
-4. Choose a random address from the block's transactions as the recipient
-5. Send 0.001 native tokens to that address:
-   - Call prepare_native_transfer with from=${walletAddress}, to=<recipient>, amount="0.001"
+1. Check my wallet balance (get_balance). If it's 0, tell me to fund my address with PROS first.
+2. Send 0.001 PROS to ${recipient}:
+   - Call prepare_native_transfer with from=${walletAddress}, to=${recipient}, amount="0.001"
    - The result will include "signedTransaction" — use it with broadcast_signed_raw_transaction
-6. Wait for the transaction to confirm (wait_for_transaction)
-7. Get the receipt (get_transaction_receipt) and report the details`;
+3. Wait for the transaction to confirm (wait_for_transaction)
+4. Get the receipt (get_transaction_receipt) and report the details`;
 
 console.log("=== Pharos Agent Kit: Send Tokens Demo ===");
-console.log(`Wallet: ${walletAddress}`);
+console.log(`Wallet:    ${walletAddress}`);
+console.log(`Recipient: ${recipient}${recipient === walletAddress ? " (self-send)" : ""}`);
 
 await runAgent({
   systemPrompt,

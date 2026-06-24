@@ -59,7 +59,8 @@ async function generateSimple(): Promise<void> {
   console.log(`\u2713 Saved to .env (WALLET_ADDRESS + PRIVATE_KEY)`);
   console.log(`\u2713 Mode: simple`);
   console.log(``);
-  console.log(`Next: npm run demo:wallet (to get testnet tokens)`);
+  console.log(`Next: npm run demo:wallet (show your address & PROS balance)`);
+  console.log(`Mainnet uses real PROS — fund this address from an exchange or bridge.`);
 }
 
 async function generateSecure(): Promise<void> {

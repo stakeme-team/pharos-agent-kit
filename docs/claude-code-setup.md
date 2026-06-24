@@ -32,8 +32,8 @@ That's it! Claude Code automatically detects `.mcp.json` and connects to the Pha
 Once inside Claude Code, you can use the built-in skills:
 
 ```
-/wallet    — Create wallet and get testnet tokens from faucet
-/send      — Send tokens to a random address from a recent block
+/wallet    — Set up a wallet and show your address & PROS balance
+/send      — Send PROS to a recipient address you specify
 /deploy    — Deploy and verify a smart contract
 ```
 
@@ -41,7 +41,7 @@ Or just chat naturally:
 
 ```
 "Check my wallet balance"
-"Send 0.001 PHRS to a random address"
+"Send 0.001 PROS to <recipient address> and confirm the receipt"
 "Deploy the SimpleStorage contract and verify it"
 ```
 

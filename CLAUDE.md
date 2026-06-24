@@ -2,6 +2,8 @@
 
 You are working with the Pharos blockchain through an MCP server. This file tells you how to interact with it safely and effectively.
 
+> ⚠️ **Mainnet — real funds.** This kit targets the Pharos **mainnet** (chainId 1672, native token **PROS**). `/send` and `/deploy` move **real PROS**. Always confirm the recipient and amount before broadcasting, and prefer secure mode with manual approval. There is **no mainnet faucet** — the faucet tools are testnet-only.
+
 > **For continuing development:** Read `docs/SESSION_CONTEXT.md` for the full history of decisions, bugs fixed, and what's left to do.
 
 ## MCP Server
@@ -12,7 +14,7 @@ The Pharos MCP server is connected automatically via `.mcp.json`. It provides to
 - **Blocks**: `list_evm_blocks`, `get_evm_block_by_height`
 - **Contracts**: `read_evm_contract`, `verify_evm_contract_standard_json`, `get_evm_compiler_versions`
 - **Tokens**: `list_erc20_tokens`, `get_erc20_token_by_address`, `get_erc721_token_by_address`
-- **Faucet**: `claim_faucet_tokens`, `get_faucet_payout_status`
+- **Faucet** (testnet only): `claim_faucet_tokens`, `get_faucet_payout_status`
 - **Explorer**: `explorer_search`, `get_account_by_address`
 
 ## SECURITY RULES — MANDATORY
@@ -51,7 +53,9 @@ Call `broadcast_signed_raw_transaction` with the signed hex from step 2.
 ### Step 4: Wait for confirmation
 Call `wait_for_transaction` with the tx hash.
 
-## Faucet Flow
+## Faucet Flow (testnet only)
+
+> The faucet does **not** work on mainnet. On mainnet, fund the address from an exchange or bridge. Use this flow only against a Pharos testnet.
 
 1. Get wallet address: `grep WALLET_ADDRESS .env | cut -d'=' -f2`
 2. Call `claim_faucet_tokens` with the address

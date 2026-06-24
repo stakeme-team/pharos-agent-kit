@@ -2,24 +2,26 @@
 
 Copy-paste these into Claude Code, Cursor, or Codex chat.
 
-## Wallet & Faucet
+## Wallet & Balance
 
 ```
-Check if I have a wallet set up, and if so, check its balance.
+Check if I have a wallet set up, and if so, show my address and PROS balance.
 ```
 
 ```
-Claim testnet tokens from the faucet for my wallet and show me the balance after.
+(Testnet only) Claim testnet tokens from the faucet for my wallet and show me the balance after.
 ```
 
 ## Send Tokens
 
+> Mainnet uses real PROS — always send to an address you intend.
+
 ```
-Find a random address from the latest block on Pharos and send 0.001 PHRS to it. Show me the transaction receipt.
+Send 0.01 PROS to address 0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18 and wait for confirmation.
 ```
 
 ```
-Send 0.01 PHRS to address 0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18 and wait for confirmation.
+(Testnet only) Find a random address from the latest block on Pharos and send 0.001 PROS to it. Show me the transaction receipt.
 ```
 
 ## Deploy & Verify Contract

@@ -47,7 +47,7 @@ In Codex, ask:
 
 ```
 "Check my Pharos wallet balance — address is in .env as WALLET_ADDRESS"
-"Send 0.001 tokens to a random address from a recent block"
+"Send 0.001 PROS to <recipient address> and confirm the receipt"
 "Deploy the SimpleStorage contract and verify it on the explorer"
 ```
 

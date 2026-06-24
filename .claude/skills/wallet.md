@@ -1,9 +1,13 @@
 ---
 name: wallet
-description: Create wallet and claim testnet tokens from faucet
+description: Set up a wallet and show your address and PROS balance on Pharos
 ---
 
-# /wallet — Wallet Setup & Faucet
+# /wallet — Wallet Setup & Balance
+
+> Pharos mainnet (chainId 1672) uses **real PROS**. There is no mainnet faucet —
+> fund your address from an exchange or bridge. The faucet steps below are
+> **testnet-only**.
 
 ## Steps
 
@@ -35,17 +39,17 @@ description: Create wallet and claim testnet tokens from faucet
 
 4. Check current balance using MCP tool `get_balance` with the wallet address.
 
-5. If balance is 0 or low, claim faucet tokens:
-   - Call MCP `claim_faucet_tokens` with `address` = wallet address
-   - Note the `requestId` from the response
+5. Report the address and PROS balance to the user (convert from wei to PROS).
 
-6. Poll faucet status:
-   - Call MCP `get_faucet_payout_status` with the `requestId`
-   - If status is not "completed", wait a few seconds and poll again (max 10 attempts)
-
-7. Verify final balance:
-   - Call MCP `get_balance` with the wallet address
-   - Report the balance to the user
+6. If the balance is 0 or low:
+   - **Mainnet:** tell the user to fund this address with real PROS from an
+     exchange or bridge. Do NOT call the faucet — it does not work on mainnet.
+   - **Testnet only:** you may claim from the faucet:
+     - Call MCP `claim_faucet_tokens` with `address` = wallet address
+     - Note the `requestId` from the response
+     - Poll MCP `get_faucet_payout_status` with the `requestId`; if not
+       "completed", wait a few seconds and poll again (max 10 attempts)
+     - Call `get_balance` again and report the final balance
 
 ## SECURITY
 - NEVER read PRIVATE_KEY from .env

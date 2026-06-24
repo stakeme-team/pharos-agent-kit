@@ -1,9 +1,12 @@
 ---
 name: send
-description: Send native tokens to a random address from a recent block
+description: Send PROS to a recipient address and confirm the receipt
 ---
 
-# /send — Send Tokens
+# /send — Send PROS
+
+> Pharos mainnet uses **real PROS**. Send only to an address you intend, and confirm
+> the recipient and amount before broadcasting.
 
 ## Steps
 
@@ -12,19 +15,21 @@ description: Send native tokens to a random address from a recent block
    grep WALLET_ADDRESS .env | cut -d'=' -f2
    ```
 
-2. Check balance using MCP `get_balance`. If insufficient, suggest running `/wallet` first.
+2. Determine the recipient and amount:
+   - Use the recipient address and amount the user provides.
+   - If the user did not specify a recipient, ask for one.
+   - Only on a **testnet** may you pick a random `from`/`to` address from a recent
+     block (`list_evm_blocks` + `get_evm_block_by_height`). NEVER do this on mainnet —
+     it sends real funds to a stranger.
 
-3. Find a recipient address:
-   - Call MCP `list_evm_blocks` with `limit: 1` to get the latest block
-   - Call MCP `get_evm_block_by_height` with the block height to get transactions
-   - Pick a random address from the block's transactions (a `from` or `to` address)
-   - If no transactions found, try an earlier block
+3. Check balance using MCP `get_balance`. If insufficient, tell the user to fund the
+   address (mainnet: from an exchange or bridge) or run `/wallet`.
 
 4. Prepare the transfer:
    - Call MCP `prepare_native_transfer` with:
      - `from`: wallet address
-     - `to`: recipient address from step 3
-     - `amount`: "0.001" (small test amount)
+     - `to`: recipient address from step 2
+     - `amount`: the amount to send (e.g. "0.001")
 
 5. Sign the transaction:
    ```bash

@@ -10,6 +10,14 @@ const PREPARE_TOOLS = [
   "prepare_erc1155_transfer",
   "prepare_token_approval",
   "prepare_contract_write",
+  // Staking
+  "prepare_delegate",
+  "prepare_undelegate",
+  "prepare_add_stake",
+  "prepare_withdraw_stake",
+  "prepare_claim_stake",
+  "prepare_claim_reward",
+  "prepare_compound_rewards",
 ];
 
 /**

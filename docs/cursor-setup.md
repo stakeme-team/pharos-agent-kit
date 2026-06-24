@@ -31,7 +31,7 @@ In Cursor's AI chat (Cmd+L), ask:
 
 ```
 "Check my Pharos wallet balance"
-"Send 0.001 tokens to a random address from a recent block"
+"Send 0.001 PROS to <recipient address> and confirm the receipt"
 "Deploy the SimpleStorage contract from contracts/ and verify it"
 ```
 
